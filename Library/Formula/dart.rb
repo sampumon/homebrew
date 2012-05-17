@@ -2,9 +2,9 @@ require 'formula'
 
 class Dart < Formula
   homepage 'http://www.dartlang.org/'
-  url 'https://gsdview.appspot.com/dart-editor-archive-integration/6722/dart-macos.zip'
-  version '6722'
-  md5 '0afac9764a19e6fd99d3bbe2ae755379'
+  url 'https://gsdview.appspot.com/dart-editor-archive-integration/7696/dart-macos.zip'
+  version '7696'
+  md5 '27d9d1a0fba78f2caaea455162f7e166'
 
   def shim_script target
     <<-EOS.undent
@@ -17,7 +17,7 @@ class Dart < Formula
     libexec.install Dir['*']
 
     (bin+'dart').write shim_script("#{libexec}/bin/dart")
-    (bin+'frogc').write shim_script("#{libexec}/bin/frogc")
+    (bin+'dart2js').write shim_script("#{libexec}/bin/dart2js")
   end
 
   def test
