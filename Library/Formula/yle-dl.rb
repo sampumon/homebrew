@@ -3,8 +3,8 @@ require 'formula'
 class YleDl < Formula
   # TODO: use git repository and depend on rtmpdump. would it work?
   homepage 'http://users.tkk.fi/~aajanki/rtmpdump-yle/'
-  url 'http://users.tkk.fi/~aajanki/rtmpdump-yle/yle-dl-1.99.6.tar.gz'
-  md5 '7ea166d5888c4af61ae5adffeda9dea4'
+  url 'http://users.tkk.fi/~aajanki/rtmpdump-yle/yle-dl-1.99.7.tar.gz'
+  md5 '96b6bbe5b37e71539555f48426f8b672'
 
   # TODO: check dependencies
 
