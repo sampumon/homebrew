@@ -17,8 +17,8 @@ class Wine < Formula
   head 'git://source.winehq.org/git/wine.git'
 
   devel do
-    url 'http://downloads.sourceforge.net/project/wine/Source/wine-1.5.4.tar.bz2'
-    sha256 '90b10450b1afb4d54dfd20529e040daa4ee901c52b2f3bc452a86c2e06b4b759'
+    url 'http://downloads.sourceforge.net/project/wine/Source/wine-1.5.6.tar.bz2'
+    sha256 'b178bc34a69341a8f0a7ff73f7dadf2562ed2e5eb03dc0522b7c4d6002e53994'
   end
 
   depends_on 'jpeg'
