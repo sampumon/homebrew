@@ -32,13 +32,14 @@ class YleDl < Formula
 
   def test
     # TODO: remove downloaded video?
+    news = "/var/tmp/uutiset.flv"
     ohai "Getting the latest news for you."
-    system "yle-dl --latestepisode --resume -o uutiset.flv http://areena-beta.yle.fi/ng/areena?q=uutiset"
+    system "yle-dl --latestepisode --resume -o #{news} http://areena.yle.fi/?q=uutiset"
 
-    unless File.exists?("uutiset.flv")
+    unless File.exists?(news)
       onoe "yle-dl failed :("
     else
-      ohai "ALL'S GOOD! Check uutiset.flv for latest news."
+      ohai "ALL'S GOOD! Check #{news} for latest news."
     end
   end
 
