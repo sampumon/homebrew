@@ -12,14 +12,12 @@ class PyCrypto < Requirement
 end
 
 class YleDl < Formula
-  # TODO: head at github
   homepage 'http://users.tkk.fi/~aajanki/rtmpdump-yle/'
   url 'http://users.tkk.fi/~aajanki/rtmpdump-yle/yle-dl-2.0.0.tar.gz'
   md5 '08d84d654100da2da7c1a72dacc652b4'
 
   head 'git://github.com/aajanki/yle-dl.git'
 
-  # TODO: depends on json?
   depends_on 'rtmpdump'
   depends_on PyCrypto.new
   # this dependancy check fails: depends_on 'pycrypto' => :python
