@@ -2,8 +2,8 @@ require 'formula'
 
 class Nmap < Formula
   homepage 'http://nmap.org/6/'
-  url 'http://nmap.org/dist/nmap-6.00.tar.bz2'
-  md5 'e365cdada811c57e172b24b62746ab7d'
+  url 'http://nmap.org/dist/nmap-6.01.tar.bz2'
+  sha1 'e397e453893930d14e9bb33a847d15b94b7ee83a'
 
   head 'https://guest:@svn.nmap.org/nmap/', :using => :svn
 

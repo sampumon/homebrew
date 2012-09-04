@@ -3,7 +3,7 @@ require 'formula'
 class GedaGaf < Formula
   homepage 'http://geda.seul.org'
   url 'http://geda.seul.org/release/v1.6/1.6.2/geda-gaf-1.6.2.tar.gz'
-  md5 '35ae86aebc174ec1fc03863fde4c843c'
+  sha1 '87c21b3b77eebc8eec1c16672d4b1ab418ccb80d'
 
   devel do
     url 'http://geda.seul.org/devel/v1.7/1.7.2/geda-gaf-1.7.2.tar.gz'
@@ -15,6 +15,7 @@ class GedaGaf < Formula
   depends_on 'gtk+'
   depends_on 'guile'
   depends_on 'gawk'
+  depends_on :x11
 
   # MacPorts fix for glib 2.32 includes
   # Needed for 1.6.2 and 1.7.x
@@ -24,7 +25,6 @@ class GedaGaf < Formula
 
   def install
     # Help configure find libraries
-    ENV.x11
     gettext = Formula.factory('gettext')
 
     system "./configure", "--prefix=#{prefix}",

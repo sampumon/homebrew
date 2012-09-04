@@ -27,6 +27,7 @@ class Octave < Formula
   depends_on 'gnu-sed' => :build
   depends_on 'texinfo' => :build     # OS X's makeinfo won't work for this
 
+  depends_on :x11
   depends_on 'fftw'
   # When building 64-bit binaries on Snow Leopard, there are naming issues with
   # the dot product functions in the BLAS library provided by Apple's
@@ -69,16 +70,19 @@ class Octave < Formula
     # build time with -O3: user 58m58.054s  sys 7m52.221s
     ENV.m64 if MacOS.prefer_64_bit?
     ENV.append_to_cflags "-D_REENTRANT"
-    ENV.x11
 
     args = [
       "--disable-dependency-tracking",
       "--prefix=#{prefix}",
       # Cant use `-framework Accelerate` because `mkoctfile`, the tool used to
       # compile extension packages, can't parse `-framework` flags.
-      "--with-blas=#{'-ldotwrp ' if snow_leopard_64?}-Wl,-framework -Wl,Accelerate"
+      "--with-blas=#{'-ldotwrp ' if snow_leopard_64?}-Wl,-framework -Wl,Accelerate",
+      # SuiteSparse-4.x.x fix, see http://savannah.gnu.org/bugs/?37031
+      "--with-umfpack=-lumfpack -lsuitesparseconfig",
     ]
     args << "--without-framework-carbon" if MacOS.lion?
+    # avoid spurious 'invalid assignment to cs-list' erorrs on 32 bit installs:
+    args << 'CXXFLAGS=-O0' unless MacOS.prefer_64_bit?
 
     system "./configure", *args
     system "make all"

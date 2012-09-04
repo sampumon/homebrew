@@ -3,8 +3,9 @@ require 'formula'
 class Leptonica < Formula
   homepage 'http://www.leptonica.org/'
   url 'http://www.leptonica.org/source/leptonica-1.68.tar.gz'
-  md5 '5cd7092f9ff2ca7e3f3e73bfcd556403'
+  sha1 'a50563ac091f4195a5a3b4579c4fcc674b81c316'
 
+  depends_on :x11
   depends_on 'jpeg'
   depends_on 'libtiff'
 
@@ -16,7 +17,6 @@ class Leptonica < Formula
   end
 
   def install
-    ENV.x11
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make install"
