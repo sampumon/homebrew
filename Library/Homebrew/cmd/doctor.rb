@@ -231,6 +231,18 @@ def check_for_latest_xcode
   end
 end
 
+def check_for_stray_developer_directory
+  # if the uninstaller script isn't there, it's a good guess neither are
+  # any troublesome leftover Xcode files
+  if MacOS::Xcode.version >= "4.3" and File.exist? "/Developer/Library/uninstall-developer-folder"
+    return <<-EOS.undent
+    You have leftover files from an older version of Xcode.
+    You should delete them using:
+      /Developer/Library/uninstall-developer-folder
+    EOS
+  end
+end
+
 def check_cc
   unless MacOS::CLT.installed?
     if MacOS::Xcode.version >= "4.3"
@@ -249,7 +261,8 @@ end
 
 def check_standard_compilers
   return if check_for_latest_xcode # only check if Xcode is up to date
-  if !MacOS.compilers_standard? then <<-EOS.undent
+  compiler_status = MacOS.compilers_standard?
+  if not compiler_status and not compiler_status.nil? then <<-EOS.undent
     Your compilers are different from the standard versions for your Xcode.
     If you have Xcode 4.3 or newer, you should install the Command Line Tools for
     Xcode from within Xcode's Download preferences.
@@ -533,8 +546,11 @@ def check_for_config_scripts
 
   config_scripts = []
 
+  whitelist = %W[/usr/bin /usr/sbin /usr/X11/bin /usr/X11R6/bin /opt/X11/bin #{HOMEBREW_PREFIX}/bin #{HOMEBREW_PREFIX}/sbin]
+  whitelist.map! { |d| d.downcase }
+
   path_folders.each do |p|
-    next if ['/usr/bin', '/usr/sbin', '/usr/X11/bin', '/usr/X11R6/bin', "#{HOMEBREW_PREFIX}/bin", "#{HOMEBREW_PREFIX}/sbin", "/opt/X11/bin"].include? p
+    next if whitelist.include? p.downcase
     next if p =~ %r[^(#{real_cellar.to_s}|#{HOMEBREW_CELLAR.to_s})] if real_cellar
 
     configs = Dir["#{p}/*-config"]
