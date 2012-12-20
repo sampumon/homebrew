@@ -13,6 +13,7 @@ at_exit do
 end
 
 require 'global'
+require 'debrew' if ARGV.debug?
 
 def main
   # The main Homebrew process expects to eventually see EOF on the error
@@ -42,6 +43,7 @@ def main
   install(Formula.factory($0))
 rescue Exception => e
   unless error_pipe.nil?
+    e.continuation = nil if ARGV.debug?
     Marshal.dump(e, error_pipe)
     error_pipe.close
     exit! 1
@@ -69,7 +71,8 @@ def pre_superenv_hacks f
 end
 
 def install f
-  keg_only_deps = f.recursive_deps.uniq.select{|dep| dep.keg_only? }
+  deps = f.recursive_deps
+  keg_only_deps = deps.select{|dep| dep.keg_only? }
 
   pre_superenv_hacks(f)
   require 'superenv'
@@ -81,10 +84,10 @@ def install f
     f.recursive_requirements.each { |rq| rq.modify_build_environment }
   end
 
-  keg_only_deps.each do |dep|
-    opt = HOMEBREW_PREFIX/:opt/dep.name
-    fixopt(dep) unless opt.directory?
-    if not superenv?
+  deps.each do |dep|
+    opt = HOMEBREW_PREFIX/:opt/dep
+    fixopt(dep) unless opt.directory? or ARGV.ignore_deps?
+    if not superenv? and dep.keg_only?
       ENV.prepend_path 'PATH', "#{opt}/bin"
       ENV.prepend_path 'PKG_CONFIG_PATH', "#{opt}/lib/pkgconfig"
       ENV.prepend_path 'PKG_CONFIG_PATH', "#{opt}/share/pkgconfig"
@@ -127,28 +130,28 @@ def install f
       end
 
       interactive_shell f
-      nil
     else
       f.prefix.mkpath
-      f.install
+
+      begin
+        f.install
+      rescue Exception => e
+        if ARGV.debug?
+          debrew e, f
+        else
+          raise e
+        end
+      end
 
       # Find and link metafiles
-      FORMULA_META_FILES.each do |filename|
-        next if File.directory? filename
-        target_file = filename
-        target_file = "#{filename}.txt" if File.exists? "#{filename}.txt"
-        # Some software symlinks these files (see help2man.rb)
-        target_file = Pathname.new(target_file).resolved_path
-        f.prefix.install target_file => filename rescue nil
-        (f.prefix/filename).chmod 0644 rescue nil
-      end
+      f.prefix.install_metafiles Pathname.pwd
     end
   end
 end
 
 def fixopt f
   path = if f.linked_keg.directory? and f.linked_keg.symlink?
-    f.linked_keg.readlink
+    f.linked_keg.realpath
   elsif f.prefix.directory?
     f.prefix
   elsif (kids = f.rack.children).size == 1 and kids.first.directory?
@@ -158,5 +161,5 @@ def fixopt f
   end
   Keg.new(path).optlink
 rescue StandardError
-  "#{f.opt_prefix} not present or broken\nPlease reinstall #{f}. Sorry :("
+  raise "#{f.opt_prefix} not present or broken\nPlease reinstall #{f}. Sorry :("
 end
