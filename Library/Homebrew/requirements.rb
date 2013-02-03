@@ -1,3 +1,6 @@
+require 'requirement'
+require 'extend/set'
+
 # A dependency on a language-specific module.
 class LanguageModuleDependency < Requirement
   fatal true
@@ -6,6 +9,7 @@ class LanguageModuleDependency < Requirement
     @language = language
     @module_name = module_name
     @import_name = import_name || module_name
+    super()
   end
 
   satisfy { quiet_system(*the_test) }
@@ -57,10 +61,11 @@ class X11Dependency < Requirement
 
   env { x11 }
 
-  def initialize(*tags)
+  def initialize(name="x11", *tags)
     tags.flatten!
+    @name = name
     @min_version = tags.shift if /(\d\.)+\d/ === tags.first
-    super
+    super(tags)
   end
 
   satisfy :build_env => false do
@@ -79,7 +84,9 @@ class X11Dependency < Requirement
       raise TypeError, "expected X11Dependency"
     end
 
-    if other.min_version.nil?
+    if min_version.nil? && other.min_version.nil?
+      0
+    elsif other.min_version.nil?
       1
     elsif @min_version.nil?
       -1
@@ -88,6 +95,35 @@ class X11Dependency < Requirement
     end
   end
 
+  # When X11Dependency is subclassed, the new class should
+  # also inherit the information specified in the DSL above.
+  def self.inherited(mod)
+    instance_variables.each do |ivar|
+      mod.instance_variable_set(ivar, instance_variable_get(ivar))
+    end
+  end
+
+  # X11Dependency::Proxy is a base class for the X11 pseudo-deps.
+  # Rather than instantiate it directly, a separate class is built
+  # for each of the packages that we proxy to X11Dependency.
+  class Proxy < self
+    PACKAGES = [:libpng, :freetype, :fontconfig]
+
+    def self.for(name, *tags)
+      constant = name.capitalize
+
+      if const_defined?(constant)
+        klass = const_get(constant)
+      else
+        klass = Class.new(self) do
+          def initialize(name, *tags) super end
+        end
+
+        const_set(constant, klass)
+      end
+      klass.new(name, *tags)
+    end
+  end
 end
 
 
@@ -106,6 +142,7 @@ class MPIDependency < Requirement
     @lang_list = lang_list
     @non_functional = []
     @unknown_langs = []
+    super()
   end
 
   def mpi_wrapper_works? compiler
@@ -182,6 +219,7 @@ class ConflictRequirement < Requirement
     @formula = formula
     @name = name
     @opts = opts
+    super()
   end
 
   def message
@@ -204,6 +242,7 @@ end
 
 class XcodeDependency < Requirement
   fatal true
+  build true
 
   satisfy(:build_env => false) { MacOS::Xcode.installed? }
 
@@ -268,6 +307,22 @@ class TeXInstalled < Requirement
 
     You may also need to restore the ownership of Homebrew install:
       sudo chown -R $USER `brew --prefix`
+    EOS
+  end
+end
+
+class CLTDependency < Requirement
+  fatal true
+  build true
+
+  def satisfied?
+    MacOS::CLT.installed?
+  end
+
+  def message; <<-EOS.undent
+    The Command Line Tools for Xcode are required to compile this software.
+    The standalone package can be obtained from http://connect.apple.com,
+    or it can be installed via Xcode's preferences.
     EOS
   end
 end

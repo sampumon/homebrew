@@ -44,15 +44,20 @@ class CurlDownloadStrategy < AbstractDownloadStrategy
     else
       @tarball_path=HOMEBREW_CACHE+File.basename(@url)
     end
+    @temporary_path=Pathname.new(@tarball_path.to_s + ".incomplete")
   end
 
   def cached_location
     @tarball_path
   end
 
+  def downloaded_size
+    @temporary_path.size? or 0
+  end
+
   # Private method, can be overridden if needed.
   def _fetch
-    curl @url, '-o', @tarball_path
+    curl @url, '-C', downloaded_size, '-o', @temporary_path
   end
 
   def fetch
@@ -66,13 +71,13 @@ class CurlDownloadStrategy < AbstractDownloadStrategy
       begin
         _fetch
       rescue Exception => e
-        ignore_interrupts { @tarball_path.unlink if @tarball_path.exist? }
         if e.kind_of? ErrorDuringExecution
           raise CurlDownloadStrategyError, "Download failed: #{@url}"
         else
           raise
         end
       end
+      ignore_interrupts { @temporary_path.rename(@tarball_path) }
     else
       puts "Already downloaded: #{@tarball_path}"
     end
@@ -155,7 +160,7 @@ class CurlApacheMirrorDownloadStrategy < CurlDownloadStrategy
     url = mirrors.fetch('preferred') + mirrors.fetch('path_info')
 
     ohai "Best Mirror #{url}"
-    curl url, '-o', @tarball_path
+    curl url, '-C', downloaded_size, '-o', @temporary_path
   rescue IndexError
     raise "Couldn't determine mirror. Try again later."
   end
@@ -166,7 +171,7 @@ end
 class CurlPostDownloadStrategy < CurlDownloadStrategy
   def _fetch
     base_url,data = @url.split('?')
-    curl base_url, '-d', data, '-o', @tarball_path
+    curl base_url, '-d', data, '-C', downloaded_size, '-o', @temporary_path
   end
 end
 
@@ -191,7 +196,7 @@ end
 # Try not to need this, as we probably won't accept the formula.
 class CurlUnsafeDownloadStrategy < CurlDownloadStrategy
   def _fetch
-    curl @url, '--insecure', '-o', @tarball_path
+    curl @url, '--insecure', '-C', downloaded_size, '-o', @temporary_path
   end
 end
 
@@ -200,14 +205,8 @@ class CurlBottleDownloadStrategy < CurlDownloadStrategy
   def initialize name, package
     super
     @tarball_path = HOMEBREW_CACHE/"#{name}-#{package.version}#{ext}"
-
-    unless @tarball_path.exist?
-      # Stop people redownloading bottles just because I (Mike) was stupid.
-      old_bottle_path = HOMEBREW_CACHE/"#{name}-#{package.version}-bottle.tar.gz"
-      old_bottle_path = HOMEBREW_CACHE/"#{name}-#{package.version}.#{MacOS.cat}.bottle-bottle.tar.gz" unless old_bottle_path.exist?
-      old_bottle_path = HOMEBREW_CACHE/"#{name}-#{package.version}-7.#{MacOS.cat}.bottle.tar.gz" unless old_bottle_path.exist? or name != "imagemagick"
-      FileUtils.mv old_bottle_path, @tarball_path if old_bottle_path.exist?
-    end
+    mirror = ENV['HOMEBREW_SOURCEFORGE_MIRROR']
+    @url = "#{@url}?use_mirror=#{mirror}" if mirror
   end
 end
 
@@ -622,7 +621,7 @@ class DownloadStrategyDetector
     when %r[^http://www.apache.org/dyn/closer.cgi] then CurlApacheMirrorDownloadStrategy
       # Common URL patterns
     when %r[^https?://svn\.] then SubversionDownloadStrategy
-    when bottle_native_regex, bottle_regex, old_bottle_regex
+    when bottle_native_regex, bottle_regex
       CurlBottleDownloadStrategy
       # Otherwise just try to download
     else CurlDownloadStrategy

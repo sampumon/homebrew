@@ -23,11 +23,9 @@ class Lilypond < Formula
     depends_on 'netpbm'
     depends_on 'imagemagick'
     depends_on 'docbook'
-    depends_on LanguageModuleDependency.new :python, 'dblatex', 'dbtexmf.dblatex'
+    depends_on LanguageModuleDependency.new(:python, 'dblatex', 'dbtexmf.dblatex')
     depends_on 'texi2html'
   end
-
-  skip_clean :all
 
   fails_with :clang do
     build 421
@@ -50,15 +48,13 @@ class Lilypond < Formula
     end
   end
 
-  def test
-    mktemp do
-      (Pathname.pwd+'test.ly').write <<-EOS.undent
-        \\version "2.16.0"
-        \\header { title = "Do-Re-Mi" }
-        { c' d' e' }
-      EOS
-      lilykeg = Formula.factory('lilypond').linked_keg
-      system "#{lilykeg}/bin/lilypond test.ly"
-    end
+  test do
+    (testpath/'test.ly').write <<-EOS.undent
+      \\version "2.16.0"
+      \\header { title = "Do-Re-Mi" }
+      { c' d' e' }
+    EOS
+    lilykeg = Formula.factory('lilypond').linked_keg
+    system "#{lilykeg}/bin/lilypond test.ly"
   end
 end
