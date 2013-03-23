@@ -12,10 +12,19 @@ Install yle-dl via Homebrew
 
 ### Caveats
 
-Requires [PyCrypto] Python library and [RTMPdump] 2.4+ (currently homebrew has 2.3). These can be installed with:
+Requires [PyCrypto] Python library and [RTMPdump] 2.4+.
 
-	easy_install pycrypto
-	brew install --HEAD rtmpdump
+Latest Homebrew has RTMPdump 2.4. If you have 2.3:
+
+	brew update && brew upgrade rtmpdump
+
+PyCrypto can be installed with:
+
+	pip install pycrypto
+
+If you're missing pip:
+
+	easy_install pip
 
 Who Are You?
 ------------
@@ -25,5 +34,5 @@ I'm [Sampumon] and I do UNIX pipes.
 [sampumon]:http://github.com/sampumon
 [home]:http://mxcl.github.com/homebrew
 [yle-dl]:http://aajanki.github.com/yle-dl
-[rtmpdump]:http://rtmpdump.mplayerhq.hu
+[RTMPdump]:http://rtmpdump.mplayerhq.hu
 [PyCrypto]:https://www.dlitz.net/software/pycrypto/

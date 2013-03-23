@@ -3,11 +3,10 @@ require 'formula'
 class YleDl < Formula
   homepage 'http://aajanki.github.com/yle-dl/'
   url 'https://github.com/downloads/aajanki/yle-dl/yle-dl-2.0.2.tar.gz'
-  md5 '56775e319365ccb976f85c2d6896ff9e'
+  sha1 '35f560936c8e45086802474f1ee3a3b2a5747b3a'
 
-  head 'git://github.com/aajanki/yle-dl.git'
+  head 'https://github.com/sampumon/homebrew.git'
 
-  # TODO: we need RTMPdump 2.4+
   depends_on 'rtmpdump'
   depends_on LanguageModuleDependency.new :python, 'pycrypto', 'Crypto'
 
@@ -28,10 +27,9 @@ class YleDl < Formula
   end
 
   def caveats; <<-EOS.undent
-      Requires PyCrypto Python library and RTMPdump 2.4+ (currently homebrew has 2.3).
+      Requires PyCrypto Python library.
       Can be installed with:
-        easy_install pycrypto
-        brew install --HEAD rtmpdump
+        pip install pycrypto
     EOS
   end
 end
