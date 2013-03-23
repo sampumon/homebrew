@@ -2,14 +2,14 @@ require 'formula'
 
 class Play < Formula
   homepage 'http://www.playframework.org/'
-  url 'http://download.playframework.org/releases/play-2.0.4.zip'
-  sha1 '98cacf40aa2099e01051a2f0b94187dd2fbb729a'
+  url 'http://downloads.typesafe.com/play/2.1.0/play-2.1.0.zip'
+  sha1 '0708a30906673b5cded859b9d3d772a01855e07a'
 
   head 'https://github.com/playframework/Play20.git'
 
   devel do
-    url 'http://download.playframework.org/releases/play-2.1-RC4.zip'
-    sha1 '2fbf24bd14e4b74de7353e08fbed496baf394b04'
+    url 'http://downloads.typesafe.com/play/2.1.1-RC1/play-2.1.1-RC1.zip'
+    sha1 'c7e0a3e6b802efbce1f2422d6852ec4828731e30'
   end
 
   def install

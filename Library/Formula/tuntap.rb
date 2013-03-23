@@ -18,8 +18,7 @@ class Tuntap < Formula
     end
   end
 
-  def caveats
-    message = <<-EOS.undent
+  def caveats; <<-EOS.undent
       In order for TUN/TAP network devices to work, the tun/tap kernel extensions
       must be installed by the root user:
 
@@ -32,7 +31,9 @@ class Tuntap < Formula
       To load the extensions at startup, you have to install those scripts too:
 
         sudo cp -pR #{prefix}/tap /Library/StartupItems/
+        sudo chown -R root:wheel /Library/StartupItems/tap
         sudo cp -pR #{prefix}/tun /Library/StartupItems/
+        sudo chown -R root:wheel /Library/StartupItems/tun
 
       If upgrading from a previous version of tuntap, the old kernel extension
       will need to be unloaded before performing the steps listed above. First,

@@ -38,23 +38,21 @@ end
 
 
 class Checks
-  # Sorry for the lack of an indent here, the diff would have been unreadable.
 
 ############# HELPERS
-def remove_trailing_slash s
-  (s[s.length-1] == '/') ? s[0,s.length-1] : s
-end
+  def remove_trailing_slash s
+    (s[s.length-1] == '/') ? s[0,s.length-1] : s
+  end
 
-
-def paths
-  @paths ||= ENV['PATH'].split(':').collect do |p|
-    begin
-      remove_trailing_slash(File.expand_path(p))
-    rescue ArgumentError
-      onoe "The following PATH component is invalid: #{p}"
-    end
-  end.uniq.compact
-end
+  def paths
+    @paths ||= ENV['PATH'].split(':').collect do |p|
+      begin
+        remove_trailing_slash(File.expand_path(p))
+      rescue ArgumentError
+        onoe "The following PATH component is invalid: #{p}"
+      end
+    end.uniq.compact
+  end
 
   # Finds files in HOMEBREW_PREFIX *and* /usr/local.
   # Specify paths relative to a prefix eg. "include/foo.h".
@@ -70,6 +68,7 @@ end
   end
 ############# END HELPERS
 
+# Sorry for the lack of an indent here, the diff would have been unreadable.
 # See https://github.com/mxcl/homebrew/pull/9986
 def check_path_for_trailing_slashes
   bad_paths = ENV['PATH'].split(':').select{|p| p[p.length-1, p.length] == '/'}
@@ -534,6 +533,9 @@ def check_which_pkg_config
 
     This was most likely created by the Mono installer. `./configure` may
     have problems finding brew-installed packages using this other pkg-config.
+
+    Mono no longer installs this file as of 3.0.4. You should
+    `sudo rm /usr/bin/pkg-config` and upgrade to the latest version of Mono.
     EOS
   elsif binary.to_s != "#{HOMEBREW_PREFIX}/bin/pkg-config" then <<-EOS.undent
     You have a non-Homebrew 'pkg-config' in your PATH:
@@ -607,7 +609,7 @@ def check_for_config_scripts
 
     configs = Dir["#{p}/*-config"]
     # puts "#{p}\n    #{configs * ' '}" unless configs.empty?
-    config_scripts << [p, configs.collect {|p| File.basename(p)}] unless configs.empty?
+    config_scripts << [p, configs.map { |c| File.basename(c) }] unless configs.empty?
   end
 
   unless config_scripts.empty?
@@ -743,9 +745,8 @@ def check_git_newline_settings
   return unless which "git"
 
   autocrlf = `git config --get core.autocrlf`.chomp
-  safecrlf = `git config --get core.safecrlf`.chomp
 
-  if !autocrlf.empty? && autocrlf != 'false' then <<-EOS.undent
+  if autocrlf == 'true' then <<-EOS.undent
     Suspicious Git newline settings found.
 
     The detected Git newline settings will cause checkout problems:
@@ -753,7 +754,7 @@ def check_git_newline_settings
 
     If you are not routinely dealing with Windows-based projects,
     consider removing these by running:
-    `git config --global --set core.autocrlf false`
+    `git config --global --set core.autocrlf input`
     EOS
   end
 end
@@ -779,6 +780,9 @@ end
 def check_the_git_origin
   return unless which "git"
   return if check_for_git_origin
+
+  # otherwise this will nag users with no repo about their remote
+  return unless (HOMEBREW_REPOSITORY/'.git').exist?
 
   HOMEBREW_REPOSITORY.cd do
     origin = `git config --get remote.origin.url`.chomp
@@ -849,8 +853,8 @@ def check_for_linked_keg_only_brews
     s = <<-EOS.undent
     Some keg-only formula are linked into the Cellar.
     Linking a keg-only formula, such as gettext, into the cellar with
-    `brew link f` will cause other formulae to detect them during the
-    `./configure` step. This may cause problems when compiling those
+    `brew link <formula>` will cause other formulae to detect them during
+    the `./configure` step. This may cause problems when compiling those
     other formulae.
 
     Binaries provided by keg-only formulae may override system binaries
@@ -920,7 +924,7 @@ def check_git_status
       If this a surprise to you, then you should stash these modifications.
       Stashing returns Homebrew to a pristine state but can be undone
       should you later need to do so for some reason.
-          cd #{HOMEBREW_REPOSITORY}/Library && git stash && git clean -f
+          cd #{HOMEBREW_REPOSITORY}/Library && git stash && git clean -d -f
       EOS
     end
   end
@@ -974,6 +978,14 @@ def check_for_bad_python_symlink
   unless $1 == "2" then <<-EOS.undent
     python is symlinked to python#$1
     This will confuse build scripts and in general lead to subtle breakage.
+    EOS
+  end
+end
+
+def check_for_non_prefixed_coreutils
+  gnubin = `brew --prefix coreutils`.chomp + "/libexec/gnubin"
+  if paths.include? gnubin then <<-EOS.undent
+    Putting non-prefixed coreutils in your path can cause gmp builds to fail.
     EOS
   end
 end

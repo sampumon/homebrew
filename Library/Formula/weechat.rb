@@ -2,8 +2,8 @@ require 'formula'
 
 class Weechat < Formula
   homepage 'http://www.weechat.org'
-  url 'http://www.weechat.org/files/src/weechat-0.3.9.2.tar.bz2'
-  sha1 '64147c88426c240d5d33c65755c729ed2c435aeb'
+  url 'http://www.weechat.net/files/src/weechat-0.4.0.tar.bz2'
+  sha1 'e4b891d9d3d68196f97d226f487c4a2382d59d99'
 
   depends_on 'cmake' => :build
   depends_on 'gettext'

@@ -5,7 +5,7 @@ class PythonVersion < Requirement
 
   satisfy { `python -c 'import sys;print(sys.version[:3])'`.strip.to_f >= 2.6 }
 
-  def message;
+  def message
     "Node's build system, gyp, requires Python 2.6 or newer."
   end
 end
@@ -18,23 +18,22 @@ class NpmNotInstalled < Requirement
   end
 
   def message; <<-EOS.undent
-    The homebrew node recipe now (beginning with 0.8.0) comes with npm.
+    Beginning with 0.8.0, this recipe now comes with npm.
     It appears you already have npm installed at #{modules_folder}/npm.
-    To use the npm that comes with this recipe,
-      first uninstall npm with `npm uninstall npm -g`.
-      Then run this command again.
+    To use the npm that comes with this recipe, first uninstall npm with
+    `npm uninstall npm -g`, then run this command again.
 
     If you would like to keep your installation of npm instead of
-      using the one provided with homebrew,
-      install the formula with the --without-npm option added.
+    using the one provided with homebrew, install the formula with
+    the `--without-npm` option.
     EOS
   end
 
   satisfy :build_env => false do
     begin
-      path = Pathname.new("#{modules_folder}/npm")
+      path = Pathname.new("#{modules_folder}/npm/bin/npm")
       path.realpath.to_s.include?(HOMEBREW_CELLAR)
-    rescue Exception => e
+    rescue Errno::ENOENT
       true
     end
   end
@@ -42,23 +41,18 @@ end
 
 class Node < Formula
   homepage 'http://nodejs.org/'
-  url 'http://nodejs.org/dist/v0.8.18/node-v0.8.18.tar.gz'
-  sha1 'e3bc9b64f60f76a32b7d9b35bf86b5d1b8166717'
-
-  devel do
-    url 'http://nodejs.org/dist/v0.9.8/node-v0.9.8.tar.gz'
-    sha1 'ce337f1f7baca56954412fbeaa25b4f9ea4c8528'
-  end
+  url 'http://nodejs.org/dist/v0.10.1/node-v0.10.1.tar.gz'
+  sha1 'd4d9ef3b70452112246ea2043ef75943611e3537'
 
   head 'https://github.com/joyent/node.git'
 
-  # Leopard OpenSSL is not new enough, so use our keg-only one
-  depends_on 'openssl' if MacOS.version == :leopard
-  depends_on NpmNotInstalled unless build.include? 'without-npm'
-  depends_on PythonVersion
-
   option 'enable-debug', 'Build with debugger hooks'
   option 'without-npm', 'npm will not be installed'
+  option 'with-shared-libs', 'Use Homebrew V8 and system OpenSSL, zlib'
+
+  depends_on NpmNotInstalled unless build.without? 'npm'
+  depends_on PythonVersion
+  depends_on 'v8' if build.with? 'shared-libs'
 
   fails_with :llvm do
     build 2326
@@ -73,6 +67,13 @@ class Node < Formula
     ENV['DEVELOPER_DIR'] = MacOS.dev_tools_path unless MacOS::Xcode.installed?
 
     args = %W{--prefix=#{prefix}}
+
+    if build.with? 'shared-libs'
+      args << '--shared-openssl' unless MacOS.version == :leopard
+      args << '--shared-v8'
+      args << '--shared-zlib'
+    end
+
     args << "--debug" if build.include? 'enable-debug'
     args << "--without-npm" if build.include? 'without-npm'
 

@@ -33,15 +33,14 @@ class Tty
   end
 end
 
-# args are additional inputs to puts until a nil arg is encountered
 def ohai title, *sput
-  title = title.to_s[0, Tty.width - 4] if $stdout.tty? unless ARGV.verbose?
+  title = title.to_s[0, Tty.width - 4] if $stdout.tty? && !ARGV.verbose?
   puts "#{Tty.blue}==>#{Tty.white} #{title}#{Tty.reset}"
   puts sput unless sput.empty?
 end
 
 def oh1 title
-  title = title.to_s[0, Tty.width - 4] if $stdout.tty? unless ARGV.verbose?
+  title = title.to_s[0, Tty.width - 4] if $stdout.tty? && !ARGV.verbose?
   puts "#{Tty.green}==>#{Tty.white} #{title}#{Tty.reset}"
 end
 
@@ -97,6 +96,14 @@ module Homebrew
     Process.wait
     $?.success?
   end
+end
+
+def with_system_path
+  old_path = ENV['PATH']
+  ENV['PATH'] = '/usr/bin:/bin'
+  yield
+ensure
+  ENV['PATH'] = old_path
 end
 
 # Kernel.system but with exceptions
@@ -199,8 +206,8 @@ def archs_for_command cmd
   Pathname.new(cmd).archs
 end
 
-def inreplace path, before=nil, after=nil
-  [*path].each do |path|
+def inreplace paths, before=nil, after=nil
+  Array(paths).each do |path|
     f = File.open(path, 'r')
     s = f.read
 

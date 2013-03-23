@@ -10,8 +10,10 @@ end
 
 class Opencv < Formula
   homepage 'http://opencv.org/'
-  url 'http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.3/OpenCV-2.4.3.tar.bz2'
-  sha1 '982be2c3e52dfc3e9d14692c60bc856b2b766be2'
+  url 'http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.4/OpenCV-2.4.4a.tar.bz2'
+  sha1 '6e518c0274a8392c0c98d18ef0ef754b9c596aca'
+
+  env :std # to find python
 
   option '32-bit'
   option 'with-qt',  'Build the Qt4 backend to HighGUI'
@@ -35,6 +37,7 @@ class Opencv < Formula
 
   def install
     args = std_cmake_args + %w[
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=
       -DWITH_CUDA=OFF
       -DBUILD_ZLIB=OFF
       -DBUILD_TIFF=OFF
