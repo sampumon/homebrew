@@ -25,11 +25,4 @@ class YleDl < Formula
       ohai "ALL'S GOOD! Check #{news} for latest news."
     end
   end
-
-  def caveats; <<-EOS.undent
-      Requires PyCrypto Python library.
-      Can be installed with:
-        pip install pycrypto
-    EOS
-  end
 end
