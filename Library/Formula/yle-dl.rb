@@ -14,15 +14,9 @@ class YleDl < Formula
     system "make install SYS=darwin prefix=#{prefix} mandir=#{man}"
   end
 
-  def test
-    news = "/var/tmp/uutiset.flv"
-    ohai "Getting the latest news for you."
+  test do
+    news = "yle-areena-uutiset.flv"
     system "yle-dl --latestepisode --resume -o #{news} http://areena.yle.fi/?q=uutiset"
-
-    unless File.exists?(news)
-      onoe "yle-dl failed :("
-    else
-      ohai "ALL'S GOOD! Check #{news} for latest news."
-    end
+    File.exists?(news)
   end
 end
