@@ -8,7 +8,11 @@ For your other brewing needs, go to [Homebrew homepage][home].
 Install yle-dl via Homebrew
 ---------------------------
 
-	brew install https://raw.github.com/sampumon/homebrew/master/Library/Formula/yle-dl.rb
+	brew install yle-dl
+
+If you get `no available formula for yle-dl`:
+
+	brew update
 
 ### Caveats
 
