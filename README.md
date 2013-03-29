@@ -31,8 +31,8 @@ Who Are You?
 I'm [Sampumon] and I do UNIX pipes.
 
 
+[home]:http://brew.sh
 [sampumon]:http://github.com/sampumon
-[home]:http://mxcl.github.com/homebrew
 [yle-dl]:http://aajanki.github.com/yle-dl
 [RTMPdump]:http://rtmpdump.mplayerhq.hu
 [PyCrypto]:https://www.dlitz.net/software/pycrypto/
